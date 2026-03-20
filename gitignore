@@ -1,0 +1,14 @@
+# Secrets (절대 GitHub에 올리지 말 것)
+.streamlit/secrets.toml
+secrets.toml
+
+# 데이터 파일
+*.csv
+*.xlsx
+*.xls
+financial_data.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
