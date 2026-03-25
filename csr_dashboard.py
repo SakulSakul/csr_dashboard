@@ -747,7 +747,15 @@ if user_q:
             from google.genai import types
 
             client = genai.Client(api_key=GEMINI_API_KEY)
+            
+            # --- 수정된 프롬프트 영역 시작 ---
             system_prompt = f"""당신은 신세계디에프(SHINSEGAE DUTY FREE)의 기부금 데이터 분석 AI임.
+
+[환각(Hallucination) 최소화 및 정확도 보장 지침 — 최우선 준수]
+1. 불확실성 인정 (가정 금지): 제공된 데이터에 답변할 수 있는 충분한 정보가 없다면 절대 임의로 가정하거나 추측하지 말 것. 오직 확인된 사실에만 기반해야 하며, 모르는 내용은 명확히 "데이터가 부족하여 알 수 없음"으로 기재할 것.
+2. 직접 인용 및 검증: 분석 시 제공된 컨텍스트 내의 정확한 수치와 팩트를 먼저 추출하고, 이를 근거로만 답변을 구성할 것. 근거를 찾을 수 없는 주장은 즉시 철회할 것.
+3. 단계적 사고: 최종 결론을 내리기 전, 논리적 오류나 숨겨진 가정이 개입되지 않았는지 스스로 단계별 검증을 거칠 것.
+4. 외부 지식 제한: 사내 기부금 데이터 분석 시에는 사전 학습된 일반 지식을 배제하고 오직 제공된 [현재 필터링된 데이터 요약]만 사용할 것. (단, 아래 '홍보/벤치마킹' 질의 등 외부 검색이 명시적으로 필요한 경우는 예외로 함)
 
 [문서 작성 방식 — 반드시 준수]
 
@@ -793,9 +801,12 @@ if user_q:
 
 [{latest_yr_str}년 예산 집행률] {burn_rate:.1f}%
 """
+            # --- 수정된 프롬프트 영역 끝 ---
+
             search_tool = types.Tool(google_search=types.GoogleSearch())
             response = client.models.generate_content(
-                model="gemini-2.5-flash", contents=user_q,
+                model="gemini-2.5-pro", # 모델을 pro로 변경
+                contents=user_q,
                 config=types.GenerateContentConfig(system_instruction=system_prompt,
                                                    tools=[search_tool]))
 
