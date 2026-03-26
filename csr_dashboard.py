@@ -298,7 +298,7 @@ if similar:
         st.warning(f"⚠️ 유사한 기부처 명칭이 발견되었습니다. 데이터 통일이 필요할 수 있습니다: **[{a}]** 와 **[{b}]** (유사도 {pct}%)")
 
 # ══════════════════════════════════════════════
-# 5. 사이드바 — 재무 지표 & 필터
+# 5. 사이드바 — 재무 지표 & 필터 (수정 반영)
 # ══════════════════════════════════════════════
 data_years = sorted(df['연도'].dropna().unique())
 
@@ -326,6 +326,11 @@ with st.sidebar:
 
     st.divider()
     st.header("🔍 데이터 필터")
+    
+    # ── 검색 대상 및 키워드 입력 ──
+    search_col = st.selectbox("검색 대상", ['전체', '테마', '기부사업', '적요', '비고'])
+    search_kw = st.text_input("텍스트 검색", placeholder="검색어를 입력하세요...")
+    
     sel_years = st.multiselect("연도", data_years, default=data_years)
     quarters = sorted(df['분기'].unique())
     sel_quarters = st.multiselect("분기", quarters, default=quarters)
@@ -334,9 +339,21 @@ with st.sidebar:
     donors_list = sorted(df['기부처'].dropna().unique())
     sel_donors = st.multiselect("기부처", donors_list, default=donors_list)
 
-# 필터 적용
+# ── 필터 적용 로직 ──
 mask = (df['연도'].isin(sel_years) & df['분기'].isin(sel_quarters)
         & df['테마'].isin(sel_themes) & df['기부처'].isin(sel_donors))
+
+# 검색어가 입력된 경우 조건 분기
+if search_kw:
+    if search_col == '전체':
+        # 데이터프레임 전체를 문자열로 변환 후, 어느 한 컬럼이라도 키워드가 포함되어 있으면 True
+        kw_mask = df.astype(str).apply(lambda x: x.str.contains(search_kw, case=False, na=False)).any(axis=1)
+    else:
+        # 선택된 특정 컬럼에서만 검색
+        kw_mask = df[search_col].fillna('').astype(str).str.contains(search_kw, case=False, na=False)
+    
+    mask = mask & kw_mask
+
 fdf = df[mask].copy()
 
 if fdf.empty:
@@ -346,7 +363,7 @@ if fdf.empty:
 def get_yr_fin(yr, field):
     return yearly_financials.get(str(int(yr)), {}).get(field, 0)
 
-latest_year = max(sel_years)
+latest_year = max(sel_years) if sel_years else max(data_years)
 latest_yr_str = str(int(latest_year))
 latest_budget = yearly_financials.get(latest_yr_str, {}).get("budget", 0)
 latest_donation = fdf[fdf['연도'] == latest_year]['금액(백만원)'].sum()
