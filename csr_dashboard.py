@@ -292,7 +292,7 @@ def detect_similar_donors(donors, threshold=0.95):
             pairs.append((a, b, round(r * 100, 1)))
     return pairs
 
-similar = detect_similar_donors(df['기부처'].dropna().unique())
+similar = detect_similar_donors(tuple(df['기부처'].dropna().astype(str).unique()))
 if similar:
     for a, b, pct in similar:
         st.warning(f"⚠️ 유사한 기부처 명칭이 발견되었습니다. 데이터 통일이 필요할 수 있습니다: **[{a}]** 와 **[{b}]** (유사도 {pct}%)")
